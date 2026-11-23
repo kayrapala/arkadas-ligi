@@ -780,14 +780,4 @@ export default function App() {
             onClick={() => setActiveTab('proposals')}
             className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
               activeTab === 'proposals'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Vote className="w-4 h-4" />
-            <span>Oylamalar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('shares')}
-            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-
+                ? 'bg
