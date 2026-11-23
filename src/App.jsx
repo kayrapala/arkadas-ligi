@@ -224,10 +224,7 @@ export default function App() {
 
   if (!isConfigured) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-6 bg-[#f8fafc] text-slate-900"
-        style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 2.75rem))' }}
-      >
+      <div className="min-h-screen flex items-center justify-center p-6 pt-16 bg-[#f8fafc] text-slate-900">
         <div className="max-w-md w-full bg-white border border-amber-300 rounded-3xl p-6 shadow-lg space-y-3">
           <div className="flex items-center gap-2 text-amber-600 font-bold">
             <AlertTriangle className="w-5 h-5" />
@@ -440,14 +437,8 @@ export default function App() {
   const previewAvatar = formatAvatarValue(editAvatarSrc, editRingColor);
 
   return (
-    <div
-      className="min-h-screen bg-[#f4f6f9] text-slate-900"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 6.5rem)' }}
-    >
-      <header
-        className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200/80"
-        style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 2.75rem))' }}
-      >
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-900 pt-14 pb-28">
+      <header className="bg-white border-b border-slate-200/80">
         <div className="max-w-lg mx-auto px-4 min-h-[4rem] py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-extrabold text-base shadow-sm shadow-emerald-600/20 shrink-0">
@@ -891,10 +882,7 @@ export default function App() {
         )}
       </main>
 
-      <nav
-        className="fixed inset-x-4 z-30 max-w-md mx-auto"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
-      >
+      <nav className="fixed bottom-4 inset-x-4 z-30 max-w-md mx-auto">
         <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-900/10 rounded-3xl p-1.5 grid grid-cols-4 gap-1">
           <button
             onClick={() => setActiveTab('matches')}
