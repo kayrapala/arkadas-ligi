@@ -86,12 +86,11 @@ export default function App() {
   const [membersMap, setMembersMap] = useState({});
   const [dataLoading, setDataLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('matches'); // 'matches' | 'proposals' | 'shares' | 'profile'
+  const [activeTab, setActiveTab] = useState('matches');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [showAddGroup, setShowAddGroup] = useState(false);
 
-  // Profil & Hesap Yönetimi State'leri
   const [editNickname, setEditNickname] = useState('');
   const [editAvatarSrc, setEditAvatarSrc] = useState(REALISTIC_AVATARS.portrait3d[0]);
   const [editRingColor, setEditRingColor] = useState('emerald');
@@ -100,7 +99,6 @@ export default function App() {
   const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
   const editFileRef = useRef(null);
 
-  // Şifre Güncelleme State'leri
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
@@ -440,7 +438,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] text-slate-900 pb-28">
-      {/* Ferah Beyaz Mobil Üst Bar */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/80">
         <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -498,7 +495,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Ana İçerik Alanı */}
       <main className="max-w-lg mx-auto px-4 pt-4">
         {activeTab === 'matches' && (
           <MatchesTab
@@ -818,124 +814,3 @@ export default function App() {
                     </span>
                     {m.role === 'admin' && (
                       <span className="text-[10px] font-bold text-emerald-600">
-                        Yönetici
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5" />
-                  Kayıtlı Lobilerim
-                </div>
-                {groups.map((g) => (
-                  <button
-                    key={g.id}
-                    onClick={() => {
-                      setActiveGroupId(g.id);
-                      localStorage.setItem('arkadas_ligi_group_id', g.id);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold border transition ${
-                      g.id === activeGroup.id
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span className="truncate">{g.name}</span>
-                    {g.id === activeGroup.id && (
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    )}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => setShowAddGroup(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-slate-300 text-xs font-bold text-slate-600 hover:text-slate-900 hover:border-slate-400 transition"
-                >
-                  <Plus className="w-4 h-4 text-emerald-600" />
-                  Yeni Lobi Kur veya Kodla Katıl
-                </button>
-              </div>
-
-              <div className="pt-2 flex gap-2">
-                {isAdmin && (
-                  <button
-                    onClick={handleDeleteActiveGroup}
-                    disabled={deletingGroup}
-                    className="flex-1 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-100 flex items-center justify-center gap-1.5 transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {deletingGroup ? 'Siliniyor...' : 'Lobiyi Sil'}
-                  </button>
-                )}
-
-                <button
-                  onClick={() => supabase.auth.signOut()}
-                  className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Çıkış Yap
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Yüzen Modern 4 Sekmeli Mobil Alt Navigasyon */}
-      <nav className="fixed bottom-4 inset-x-4 z-30 max-w-md mx-auto">
-        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-900/10 rounded-3xl p-1.5 grid grid-cols-4 gap-1">
-          <button
-            onClick={() => setActiveTab('matches')}
-            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
-              activeTab === 'matches'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Trophy className="w-4 h-4" />
-            <span>Maçlar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('proposals')}
-            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
-              activeTab === 'proposals'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Vote className="w-4 h-4" />
-            <span>Oylamalar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('shares')}
-            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
-              activeTab === 'shares'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Film className="w-4 h-4" />
-            <span>Öneriler</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
-              activeTab === 'profile'
-                ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <User className="w-4 h-4" />
-            <span>Profil</span>
-          </button>
-        </div>
-      </nav>
-    </div>
-  );
-}
