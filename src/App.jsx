@@ -437,7 +437,12 @@ export default function App() {
   const previewAvatar = formatAvatarValue(editAvatarSrc, editRingColor);
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-900 pt-14 pb-28">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-900 pt-12 pb-28">
+      <div
+        aria-hidden="true"
+        className="fixed top-0 inset-x-0 h-12 bg-[#f4f6f9] z-40 pointer-events-none"
+      />
+
       <header className="bg-white border-b border-slate-200/80">
         <div className="max-w-lg mx-auto px-4 min-h-[4rem] py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
