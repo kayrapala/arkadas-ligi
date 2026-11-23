@@ -13,6 +13,7 @@ import {
   LogOut,
   ArrowLeft,
   Camera,
+  Info,
 } from 'lucide-react';
 
 export default function OnboardingScreen({
@@ -50,9 +51,9 @@ export default function OnboardingScreen({
   async function handleCreateProfile(e) {
     e.preventDefault();
     setError('');
-    const trimmed = nickname.trim();
-    if (trimmed.length < 2 || trimmed.length > 24) {
-      setError('Takma ad 2 ile 24 karakter arasında olmalı.');
+    const formattedName = nickname.trim().toLocaleLowerCase('tr-TR');
+    if (formattedName.length < 2 || formattedName.length > 24) {
+      setError('İsim ve soyisim 2 ile 24 karakter arasında olmalı.');
       return;
     }
 
@@ -60,13 +61,13 @@ export default function OnboardingScreen({
     try {
       const { data, error: insErr } = await supabase
         .from('profiles')
-        .insert({ id: user.id, nickname: trimmed, avatar: combinedAvatar })
+        .insert({ id: user.id, nickname: formattedName, avatar: combinedAvatar })
         .select()
         .single();
 
       if (insErr) {
         if (insErr.code === '23505') {
-          throw new Error('Bu takma ad zaten kullanılıyor, lütfen başka bir isim seç.');
+          throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad gir.');
         }
         throw insErr;
       }
@@ -153,7 +154,7 @@ export default function OnboardingScreen({
                 />
                 <div className="min-w-0">
                   <div className="text-base font-bold text-slate-900 truncate">
-                    {nickname.trim() || 'Takma Adın'}
+                    {nickname.trim().toLocaleLowerCase('tr-TR') || 'ad soyad'}
                   </div>
                   <div className="text-xs text-emerald-600 font-medium">
                     Canlı Profil Önizlemesi
@@ -274,10 +275,10 @@ export default function OnboardingScreen({
                 </div>
               </div>
 
-              {/* Takma Ad */}
+              {/* İsim & Soyisim Alanı + Küçük Harf Uyarı Mesajı */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Takma Ad
+                  İsim ve Soyisim
                 </label>
                 <input
                   type="text"
@@ -286,9 +287,16 @@ export default function OnboardingScreen({
                   maxLength={24}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Örn: Kayra, Kral10..."
+                  placeholder="örnek: ahmet yılmaz"
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                 />
+                <div className="mt-2 flex items-start gap-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11px] font-medium text-amber-800 leading-relaxed">
+                  <Info className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <span>
+                    Lütfen kendi <strong>isim ve soyismini</strong>, tamamı{' '}
+                    <strong>küçük harflerle</strong> olacak şekilde gir (örnek: <em>ahmet yılmaz</em>).
+                  </span>
+                </div>
               </div>
 
               {error && (
