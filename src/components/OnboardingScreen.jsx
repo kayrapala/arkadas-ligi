@@ -1,17 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Users, PlusCircle, KeyRound, Loader2, Sparkles, LogOut } from 'lucide-react';
+import UserAvatar, {
+  AVATAR_RINGS,
+  REALISTIC_AVATARS,
+  formatAvatarValue,
+  compressImageFile,
+} from './UserAvatar';
+import {
+  PlusCircle,
+  KeyRound,
+  Loader2,
+  LogOut,
+  ArrowLeft,
+  Camera,
+} from 'lucide-react';
 
-const AVATARS = ['⚽', '🔥', '🦁', '🦅', '💛', '💙', '👑', '😎', '🎬', '🍕', '🎮', '🚀'];
-
-export default function OnboardingScreen({ user, profile, onProfileCreated, onGroupJoined }) {
+export default function OnboardingScreen({
+  user,
+  profile,
+  onProfileCreated,
+  onGroupJoined,
+  onCancel,
+}) {
   const [nickname, setNickname] = useState('');
-  const [avatar, setAvatar] = useState('⚽');
-  const [groupMode, setGroupMode] = useState('join'); // 'join' | 'create'
+  const [avatarSrc, setAvatarSrc] = useState(REALISTIC_AVATARS.portrait3d[0]);
+  const [ringColor, setRingColor] = useState('emerald');
+  const [avatarTab, setAvatarTab] = useState('portrait3d');
+  const [groupMode, setGroupMode] = useState('join');
   const [inviteCode, setInviteCode] = useState('');
   const [groupName, setGroupName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
+
+  const combinedAvatar = formatAvatarValue(avatarSrc, ringColor);
+
+  async function handlePhotoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError('');
+    try {
+      const compressed = await compressImageFile(file);
+      setAvatarSrc(compressed);
+    } catch (err) {
+      setError(err.message || 'Fotoğraf yüklenemedi.');
+    }
+  }
 
   async function handleCreateProfile(e) {
     e.preventDefault();
@@ -26,7 +60,7 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
     try {
       const { data, error: insErr } = await supabase
         .from('profiles')
-        .insert({ id: user.id, nickname: trimmed, avatar })
+        .insert({ id: user.id, nickname: trimmed, avatar: combinedAvatar })
         .select()
         .single();
 
@@ -52,7 +86,7 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
     try {
       if (groupMode === 'create') {
         const name = groupName.trim();
-        if (!name) throw new Error('Lütfen bir grup adı yaz.');
+        if (!name) throw new Error('Lütfen bir lobi adı yaz.');
         const { data: gid, error: rpcErr } = await supabase.rpc('create_group', {
           p_name: name,
         });
@@ -75,12 +109,24 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-5 py-10 bg-[#090d16]">
-      <div className="w-full max-w-sm mx-auto">
-        <div className="flex justify-end mb-4">
+    <div className="min-h-screen flex flex-col justify-center px-4 py-8 bg-[#f8fafc] text-slate-900">
+      <div className="w-full max-w-md mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          {onCancel ? (
+            <button
+              onClick={onCancel}
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-sm active:scale-95 transition"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Lobiye Dön
+            </button>
+          ) : (
+            <div />
+          )}
+
           <button
             onClick={() => supabase.auth.signOut()}
-            className="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800"
+            className="text-xs font-semibold text-slate-500 hover:text-rose-600 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-sm active:scale-95 transition"
           >
             <LogOut className="w-3.5 h-3.5" />
             Çıkış Yap
@@ -88,42 +134,150 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
         </div>
 
         {!profile ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <Sparkles className="w-4 h-4" />
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xl shadow-slate-200/50">
+            <div className="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-1">
               Adım 1 / 2
             </div>
-            <h2 className="text-xl font-bold text-white">Profilini Oluştur</h2>
-            <p className="text-xs text-slate-400 mt-1 mb-5">
-              Arkadaşlarının puan tablosunda ve oylamalarda göreceği adını ve simgeni seç.
+            <h2 className="text-xl font-extrabold text-slate-900">Profilini Oluştur</h2>
+            <p className="text-xs text-slate-500 mt-1 mb-5">
+              Kendi fotoğrafını yükle, karakterini seç veya forma rozetini belirle.
             </p>
 
+            {/* Canlı Önizleme Kartı */}
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-5">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <UserAvatar
+                  avatar={combinedAvatar}
+                  nickname={nickname || 'Üye'}
+                  size="lg"
+                />
+                <div className="min-w-0">
+                  <div className="text-base font-bold text-slate-900 truncate">
+                    {nickname.trim() || 'Takma Adın'}
+                  </div>
+                  <div className="text-xs text-emerald-600 font-medium">
+                    Canlı Profil Önizlemesi
+                  </div>
+                </div>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-200 shadow-sm active:scale-95 transition shrink-0"
+              >
+                <Camera className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Fotoğraf</span>
+              </button>
+            </div>
+
             <form onSubmit={handleCreateProfile} className="space-y-5">
+              {/* Çerçeve Rengi */}
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  Avatar Seç
+                <label className="block text-xs font-semibold text-slate-600 mb-2">
+                  Çerçeve Rengi
                 </label>
-                <div className="grid grid-cols-6 gap-2">
-                  {AVATARS.map((item) => (
+                <div className="flex items-center gap-2.5">
+                  {AVATAR_RINGS.map((ring) => (
                     <button
-                      key={item}
+                      key={ring.id}
                       type="button"
-                      onClick={() => setAvatar(item)}
-                      className={`h-11 rounded-xl text-xl flex items-center justify-center border transition ${
-                        avatar === item
-                          ? 'bg-emerald-500/20 border-emerald-500 scale-105'
-                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                      onClick={() => setRingColor(ring.id)}
+                      title={ring.label}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition ${
+                        ringColor === ring.id
+                          ? 'border-slate-900 scale-110 bg-white shadow-sm'
+                          : 'border-slate-200 bg-slate-50 opacity-75 hover:opacity-100'
                       }`}
                     >
-                      {item}
+                      <span className={`w-4 h-4 rounded-full ${ring.dotClass}`} />
                     </button>
                   ))}
                 </div>
               </div>
 
+              {/* Avatar Sekmeleri */}
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                  Takma Ad (Nickname)
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="text-xs font-semibold text-slate-600">
+                    Görünüm Seç
+                  </label>
+                  <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setAvatarTab('portrait3d')}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                        avatarTab === 'portrait3d'
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      Karakter
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAvatarTab('badge')}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                        avatarTab === 'badge'
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      Forma Rozeti
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-6 gap-2.5">
+                  {REALISTIC_AVATARS[avatarTab].map((item) => {
+                    const selected = avatarSrc === item;
+                    const initials = (nickname.trim() || 'Ü')
+                      .slice(0, 2)
+                      .toUpperCase();
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setAvatarSrc(item)}
+                        className={`aspect-square rounded-full overflow-hidden border-2 transition active:scale-95 flex items-center justify-center ${
+                          selected
+                            ? 'border-emerald-500 scale-105 shadow-md'
+                            : 'border-transparent opacity-85 hover:opacity-100'
+                        }`}
+                      >
+                        {item.startsWith('badge:') ? (
+                          <div
+                            className={`w-full h-full bg-gradient-to-br ${item.replace(
+                              'badge:',
+                              ''
+                            )} flex items-center justify-center text-xs font-extrabold text-white`}
+                          >
+                            {initials}
+                          </div>
+                        ) : (
+                          <img
+                            src={item}
+                            alt="Avatar"
+                            className="w-full h-full object-cover bg-slate-100"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Takma Ad */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  Takma Ad
                 </label>
                 <input
                   type="text"
@@ -132,13 +286,13 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
                   maxLength={24}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Örn: Ahmet, Kral10..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                  placeholder="Örn: Kayra, Kral10..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                 />
               </div>
 
               {error && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-600 font-medium">
                   {error}
                 </div>
               )}
@@ -146,31 +300,44 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition active:scale-[0.98]"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Devam Et'}
               </button>
             </form>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <Users className="w-4 h-4" />
-              Hoş geldin, {profile.avatar} {profile.nickname}
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xl shadow-slate-200/50">
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+              <UserAvatar avatar={profile.avatar} nickname={profile.nickname} size="md" />
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
+                  Hoş geldin
+                </div>
+                <div className="text-base font-extrabold text-slate-900">
+                  {profile.nickname}
+                </div>
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-white">Bir Gruba Katıl veya Kur</h2>
-            <p className="text-xs text-slate-400 mt-1 mb-5">
-              Arkadaşlarının davet kodunu gir ya da yeni bir grup kurup kodu onlara gönder.
+
+            <h2 className="text-lg font-extrabold text-slate-900">
+              Lobiye Katıl veya Yeni Kur
+            </h2>
+            <p className="text-xs text-slate-500 mt-1 mb-5">
+              Arkadaşlarının davet kodunu gir ya da kendi lobini oluştur.
             </p>
 
-            <div className="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl mb-5">
+            <div className="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-2xl mb-5">
               <button
                 type="button"
-                onClick={() => { setGroupMode('join'); setError(''); }}
-                className={`py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition ${
+                onClick={() => {
+                  setGroupMode('join');
+                  setError('');
+                }}
+                className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
                   groupMode === 'join'
-                    ? 'bg-emerald-500 text-slate-950 font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <KeyRound className="w-3.5 h-3.5" />
@@ -178,22 +345,25 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
               </button>
               <button
                 type="button"
-                onClick={() => { setGroupMode('create'); setError(''); }}
-                className={`py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition ${
+                onClick={() => {
+                  setGroupMode('create');
+                  setError('');
+                }}
+                className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
                   groupMode === 'create'
-                    ? 'bg-emerald-500 text-slate-950 font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                Yeni Grup Kur
+                Yeni Lobi Kur
               </button>
             </div>
 
             <form onSubmit={handleGroupAction} className="space-y-4">
               {groupMode === 'join' ? (
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     6 Haneli Davet Kodu
                   </label>
                   <input
@@ -202,14 +372,14 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
                     maxLength={10}
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="Örn: A1B2C3"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-center text-lg font-mono tracking-widest uppercase text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                    placeholder="A1B2C3"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-center text-lg font-mono tracking-widest uppercase text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500"
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                    Grup Adı
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    Lobi Adı
                   </label>
                   <input
                     type="text"
@@ -217,14 +387,14 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
                     maxLength={40}
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
-                    placeholder="Örn: Bizim Tayfa FC"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                    placeholder="Örn: Lobi, Karargah, Bizim Ekip..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500"
                   />
                 </div>
               )}
 
               {error && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-600 font-medium">
                   {error}
                 </div>
               )}
@@ -232,14 +402,14 @@ export default function OnboardingScreen({ user, profile, onProfileCreated, onGr
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition active:scale-[0.98]"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : groupMode === 'join' ? (
-                  'Gruba Katıl'
+                  'Lobiye Katıl'
                 ) : (
-                  'Grubu Oluştur'
+                  'Lobiyi Oluştur'
                 )}
               </button>
             </form>
