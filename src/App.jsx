@@ -289,133 +289,7 @@ export default function App() {
 
   function copyFullInviteMessage() {
     if (!activeGroup?.invite_code) return;
-    const text = `🏆 ${activeGroup.name} lobisine katıl!\nLink: ${window.location.origin}\nDavet Kodu: ${activeGroup.invite_code}`;
-    navigator.clipboard?.writeText(text);
-    setCopiedInviteLink(true);
-    setTimeout(() => setCopiedInviteLink(false), 2500);
-  }
-
-  async function handlePhotoUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setProfileMsg({ type: '', text: '' });
-    try {
-      const compressed = await compressImageFile(file);
-      setEditAvatarSrc(compressed);
-    } catch (err) {
-      setProfileMsg({
-        type: 'error',
-        text: err.message || 'Fotoğraf yüklenemedi.',
-      });
-    }
-  }
-
-  async function handleSaveProfile(e) {
-    e.preventDefault();
-    setProfileMsg({ type: '', text: '' });
-
-    if (normalizedEditNickname.length < 2 || normalizedEditNickname.length > 24) {
-      setProfileMsg({
-        type: 'error',
-        text: 'İsim ve soyisim 2 ile 24 karakter arasında olmalı.',
-      });
-      return;
-    }
-
-    if (isNicknameChanged && !nicknameStatus.canChange) {
-      setProfileMsg({
-        type: 'error',
-        text: nicknameStatus.message,
-      });
-      return;
-    }
-
-    const formattedAvatar = formatAvatarValue(editAvatarSrc, editRingColor);
-
-    setSavingProfile(true);
-    try {
-      const { data, error: updErr } = await supabase
-        .from('profiles')
-        .update({
-          nickname: normalizedEditNickname,
-          avatar: formattedAvatar,
-        })
-        .eq('id', session.user.id)
-        .select()
-        .single();
-
-      if (updErr) {
-        if (updErr.code === '23505') {
-          throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad dene.');
-        }
-        throw updErr;
-      }
-
-      setProfile(data);
-      setEditNickname(data.nickname);
-      await loadGroupMembers(activeGroup.id);
-      setProfileMsg({
-        type: 'success',
-        text: isNicknameChanged
-          ? 'İsim/soyisim ve profil görünümün güncellendi.'
-          : 'Fotoğrafın ve profil görünümün güncellendi.',
-      });
-    } catch (err) {
-      setProfileMsg({
-        type: 'error',
-        text: err.message || 'Profil güncellenemedi.',
-      });
-    } finally {
-      setSavingProfile(false);
-    }
-  }
-
-  async function handleChangePassword(e) {
-    e.preventDefault();
-    setPasswordMsg({ type: '', text: '' });
-
-    if (newPassword.length < 6) {
-      setPasswordMsg({
-        type: 'error',
-        text: 'Yeni şifre en az 6 karakter olmalı.',
-      });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordMsg({
-        type: 'error',
-        text: 'Girdiğin iki şifre birbiriyle eşleşmiyor.',
-      });
-      return;
-    }
-
-    setSavingPassword(true);
-    try {
-      const { error: pwErr } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-      if (pwErr) throw pwErr;
-
-      setNewPassword('');
-      setConfirmPassword('');
-      setPasswordMsg({
-        type: 'success',
-        text: 'Hesap şifren başarıyla güncellendi.',
-      });
-    } catch (err) {
-      setPasswordMsg({
-        type: 'error',
-        text: err.message || 'Şifre güncellenemedi.',
-      });
-    } finally {
-      setSavingPassword(false);
-    }
-  }
-
-  async function handleDeleteActiveGroup() {
-    if (!isAdmin || !activeGroup) return;
-    const confirmed = window.confirm(
-      `"${activeGroup.name}" lobisini kalıcı olarak silmek istediğine emin misin?`
+    const text = `🏆 ${activeGroup.name} lobisine katıl!\nLink: ${window.location.origin}\nDavet Kodu: ${activeGroup.invite_code}`; navigator.clipboard?.writeText(text); setCopiedInviteLink(true); setTimeout(() => setCopiedInviteLink(false), 2500); }  async function handlePhotoUpload(e) { const file = e.target.files?.[0]; if (!file) return; setProfileMsg({ type: '', text: '' }); try { const compressed = await compressImageFile(file); setEditAvatarSrc(compressed); } catch (err) { setProfileMsg({ type: 'error', text: err.message \vert{}\vert{} 'Fotoğraf yüklenemedi.', }); } }  async function handleSaveProfile(e) { e.preventDefault(); setProfileMsg({ type: '', text: '' });  if (normalizedEditNickname.length < 2 \vert{}\vert{} normalizedEditNickname.length > 24) { setProfileMsg({ type: 'error', text: 'İsim ve soyisim 2 ile 24 karakter arasında olmalı.', }); return; }  if (isNicknameChanged && !nicknameStatus.canChange) { setProfileMsg({ type: 'error', text: nicknameStatus.message, }); return; }  const formattedAvatar = formatAvatarValue(editAvatarSrc, editRingColor);  setSavingProfile(true); try { const { data, error: updErr } = await supabase .from('profiles') .update({ nickname: normalizedEditNickname, avatar: formattedAvatar, }) .eq('id', session.user.id) .select() .single();  if (updErr) { if (updErr.code === '23505') { throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad dene.'); } throw updErr; }  setProfile(data); setEditNickname(data.nickname); await loadGroupMembers(activeGroup.id); setProfileMsg({ type: 'success', text: isNicknameChanged ? 'İsim/soyisim ve profil görünümün güncellendi.' : 'Fotoğrafın ve profil görünümün güncellendi.', }); } catch (err) { setProfileMsg({ type: 'error', text: err.message \vert{}\vert{} 'Profil güncellenemedi.', }); } finally { setSavingProfile(false); } }  async function handleChangePassword(e) { e.preventDefault(); setPasswordMsg({ type: '', text: '' });  if (newPassword.length < 6) { setPasswordMsg({ type: 'error', text: 'Yeni şifre en az 6 karakter olmalı.', }); return; } if (newPassword !== confirmPassword) { setPasswordMsg({ type: 'error', text: 'Girdiğin iki şifre birbiriyle eşleşmiyor.', }); return; }  setSavingPassword(true); try { const { error: pwErr } = await supabase.auth.updateUser({ password: newPassword, }); if (pwErr) throw pwErr;  setNewPassword(''); setConfirmPassword(''); setPasswordMsg({ type: 'success', text: 'Hesap şifren başarıyla güncellendi.', }); } catch (err) { setPasswordMsg({ type: 'error', text: err.message \vert{}\vert{} 'Şifre güncellenemedi.', }); } finally { setSavingPassword(false); } }  async function handleDeleteActiveGroup() { if (!isAdmin \vert{}\vert{} !activeGroup) return; const confirmed = window.confirm( `"${activeGroup.name}" lobisini kalıcı olarak silmek istediğine emin misin?`
     );
     if (!confirmed) return;
 
@@ -585,13 +459,7 @@ export default function App() {
                         type="button"
                         onClick={() => setEditRingColor(ring.id)}
                         title={ring.label}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition ${
-                          editRingColor === ring.id
-                            ? 'border-slate-900 scale-110 bg-white shadow-sm'
-                            : 'border-slate-200 bg-slate-50 opacity-75 hover:opacity-100'
-                        }`}
-                      >
-                        <span className={`w-4 h-4 rounded-full ${ring.dotClass}`} />
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition ${ editRingColor === ring.id ? 'border-slate-900 scale-110 bg-white shadow-sm' : 'border-slate-200 bg-slate-50 opacity-75 hover:opacity-100' }`} > <span className={`w-4 h-4 rounded-full ${ring.dotClass}`} />
                       </button>
                     ))}
                   </div>
@@ -730,4 +598,196 @@ export default function App() {
                 Hesap & Şifre Güvenliği
               </h3>
 
-              <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-5
+              <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-semibold text-slate-400">
+                    Kayıtlı E-posta Adresi
+                  </div>
+                  <div className="text-xs font-bold text-slate-800 truncate">
+                    {session.user.email}
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                    Yeni Şifre Belirle
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="password"
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="En az 6 karakter"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <input
+                    type="password"
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Yeni şifreyi tekrar yaz"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500"
+                  />
+                </div>
+
+                {passwordMsg.text && (
+                  <div
+                    className={`p-3 rounded-xl text-xs font-semibold ${
+                      passwordMsg.type === 'success'
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                        : 'bg-rose-50 border border-rose-200 text-rose-600'
+                    }`}
+                  >
+                    {passwordMsg.text}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={savingPassword || !newPassword}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-3 rounded-2xl text-xs flex items-center justify-center gap-2 transition"
+                >
+                  {savingPassword ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Şifreyi Güncelle'
+                  )}
+                </button>
+              </form>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-extrabold text-slate-900">
+                  Lobi & Kadro ({membersList.length} Üye)
+                </h3>
+                <button
+                  onClick={copyFullInviteMessage}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  {copiedInviteLink ? 'Kopyalandı!' : 'Davet Et'}
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {membersList.map((m) => (
+                  <div
+                    key={m.id}
+                    className="inline-flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-50 border border-slate-200"
+                  >
+                    <UserAvatar avatar={m.avatar} nickname={m.nickname} size="xs" />
+                    <span className="text-xs font-bold text-slate-800">
+                      {m.nickname}
+                    </span>
+                    {m.role === 'admin' && (
+                      <span className="text-[10px] font-bold text-emerald-600">
+                        Yönetici
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  Kayıtlı Lobilerim
+                </div>
+                {groups.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => {
+                      setActiveGroupId(g.id);
+                      localStorage.setItem('arkadas_ligi_group_id', g.id);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold border transition ${
+                      g.id === activeGroup.id
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className="truncate">{g.name}</span>
+                    {g.id === activeGroup.id && (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    )}
+                  </button>
+                ))}
+
+                {isAdmin && (
+                  <button
+                    onClick={() => setShowAddGroup(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-slate-300 text-xs font-bold text-slate-600 hover:text-slate-900 hover:border-slate-400 transition"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-600" />
+                    Yeni Lobi Kur
+                  </button>
+                )}
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                {isAdmin && (
+                  <button
+                    onClick={handleDeleteActiveGroup}
+                    disabled={deletingGroup}
+                    className="flex-1 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-100 flex items-center justify-center gap-1.5 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {deletingGroup ? 'Siliniyor...' : 'Lobiyi Sil'}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => supabase.auth.signOut()}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Çıkış Yap
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <nav
+        className="fixed inset-x-4 z-30 max-w-md mx-auto"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
+      >
+        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-900/10 rounded-3xl p-1.5 grid grid-cols-4 gap-1">
+          <button
+            onClick={() => setActiveTab('matches')}
+            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
+              activeTab === 'matches'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            <span>Maçlar</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('proposals')}
+            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
+              activeTab === 'proposals'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Vote className="w-4 h-4" />
+            <span>Oylamalar</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('shares')}
+            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-
