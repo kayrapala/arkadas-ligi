@@ -30,7 +30,49 @@ import {
   KeyRound,
   Mail,
   Users,
+  Info,
 } from 'lucide-react';
+
+function getNicknameCooldownStatus(prof) {
+  if (!prof) {
+    return { canChange: true, message: '', remainingDays: 0 };
+  }
+
+  const now = Date.now();
+  const createdAt = new Date(prof.created_at || prof.nickname_updated_at || now).getTime();
+  const lastChange = new Date(prof.nickname_updated_at || prof.created_at || now).getTime();
+  const hoursSinceCreate = (now - createdAt) / (1000 * 60 * 60);
+
+  if (!prof.initial_grace_used && hoursSinceCreate <= 24) {
+    const hoursLeft = Math.max(1, Math.ceil(24 - hoursSinceCreate));
+    return {
+      canChange: true,
+      remainingDays: 0,
+      message: `İlk kayıt af hakkın aktif (${hoursLeft} saat içinde 1 kez ücretsiz düzeltme yapabilirsin).`,
+    };
+  }
+
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+  const elapsedMs = now - lastChange;
+
+  if (elapsedMs < thirtyDaysMs) {
+    const remainingDays = Math.max(
+      1,
+      Math.ceil((thirtyDaysMs - elapsedMs) / (24 * 60 * 60 * 1000))
+    );
+    return {
+      canChange: false,
+      remainingDays,
+      message: `İsim ve soyisim 30 günde bir değiştirilebilir. Kalan süre: ${remainingDays} gün.`,
+    };
+  }
+
+  return {
+    canChange: true,
+    remainingDays: 0,
+    message: '30 günlük bekleme süresi doldu; isim ve soyismini 1 kez güncelleyebilirsin.',
+  };
+}
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -233,6 +275,9 @@ export default function App() {
   const activeGroup = groups.find((g) => g.id === activeGroupId) || groups[0];
   const isAdmin = activeGroup?.role === 'admin';
   const membersList = Object.values(membersMap);
+  const nicknameStatus = getNicknameCooldownStatus(profile);
+  const normalizedEditNickname = editNickname.trim().toLocaleLowerCase('tr-TR');
+  const isNicknameChanged = normalizedEditNickname !== (profile.nickname || '');
 
   function copyInviteCode() {
     if (!activeGroup?.invite_code) return;
@@ -267,11 +312,19 @@ export default function App() {
   async function handleSaveProfile(e) {
     e.preventDefault();
     setProfileMsg({ type: '', text: '' });
-    const trimmed = editNickname.trim();
-    if (trimmed.length < 2 || trimmed.length > 24) {
+
+    if (normalizedEditNickname.length < 2 || normalizedEditNickname.length > 24) {
       setProfileMsg({
         type: 'error',
-        text: 'Takma ad 2 ile 24 karakter arasında olmalı.',
+        text: 'İsim ve soyisim 2 ile 24 karakter arasında olmalı.',
+      });
+      return;
+    }
+
+    if (isNicknameChanged && !nicknameStatus.canChange) {
+      setProfileMsg({
+        type: 'error',
+        text: nicknameStatus.message,
       });
       return;
     }
@@ -282,23 +335,29 @@ export default function App() {
     try {
       const { data, error: updErr } = await supabase
         .from('profiles')
-        .update({ nickname: trimmed, avatar: formattedAvatar })
+        .update({
+          nickname: normalizedEditNickname,
+          avatar: formattedAvatar,
+        })
         .eq('id', session.user.id)
         .select()
         .single();
 
       if (updErr) {
         if (updErr.code === '23505') {
-          throw new Error('Bu takma ad zaten kullanılıyor, başka bir isim dene.');
+          throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad dene.');
         }
         throw updErr;
       }
 
       setProfile(data);
+      setEditNickname(data.nickname);
       await loadGroupMembers(activeGroup.id);
       setProfileMsg({
         type: 'success',
-        text: 'Profil fotoğrafın ve bilgilerin güncellendi.',
+        text: isNicknameChanged
+          ? 'İsim/soyisim ve profil görünümün güncellendi.'
+          : 'Fotoğrafın ve profil görünümün güncellendi.',
       });
     } catch (err) {
       setProfileMsg({
@@ -384,7 +443,6 @@ export default function App() {
       {/* Ferah Beyaz Mobil Üst Bar */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/80">
         <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between gap-3">
-          {/* Sol: Lobi Adı & Davet Kodu */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-extrabold text-base shadow-sm shadow-emerald-600/20 shrink-0">
               {activeGroup.name.charAt(0).toUpperCase()}
@@ -424,7 +482,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Sağ: Profil Kısayolu */}
           <button
             onClick={() => setActiveTab('profile')}
             className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition shrink-0"
@@ -470,17 +527,14 @@ export default function App() {
           />
         )}
 
-        {/* 4. Sekme: Tam Kapsamlı Profil & Hesap Yönetimi */}
         {activeTab === 'profile' && (
           <div className="space-y-4 pb-4">
-            {/* Profil Fotoğrafı & Görünüm Kartı */}
             <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm">
               <h2 className="text-base font-extrabold text-slate-900 mb-4">
                 Profil & Fotoğrafım
               </h2>
 
               <form onSubmit={handleSaveProfile} className="space-y-5">
-                {/* Canlı Önizleme + Fotoğraf Yükleme Butonu */}
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                   <div className="flex items-center gap-3.5 min-w-0">
                     <UserAvatar
@@ -490,7 +544,7 @@ export default function App() {
                     />
                     <div className="min-w-0">
                       <div className="text-base font-extrabold text-slate-900 truncate">
-                        {editNickname.trim() || 'Takma Ad'}
+                        {normalizedEditNickname || 'ad soyad'}
                       </div>
                       <div className="text-xs text-slate-500">
                         {isAdmin ? 'Lobi Yöneticisi' : 'Lobi Üyesi'}
@@ -515,7 +569,6 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Çerçeve Rengi */}
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-2">
                     Profil Çerçeve Rengi
@@ -539,7 +592,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Hazır Karakter / Forma Seçici */}
                 <div>
                   <div className="flex items-center justify-between mb-2.5">
                     <label className="text-xs font-bold text-slate-600">
@@ -610,20 +662,36 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Takma Ad */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
-                    Takma Ad (Nickname)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600">
+                      İsim ve Soyisim
+                    </label>
+                    {!nicknameStatus.canChange && (
+                      <span className="text-[11px] font-bold text-amber-600">
+                        {nicknameStatus.remainingDays} gün kaldı
+                      </span>
+                    )}
+                  </div>
+
                   <input
                     type="text"
                     required
                     minLength={2}
                     maxLength={24}
+                    disabled={!nicknameStatus.canChange}
                     value={editNickname}
                     onChange={(e) => setEditNickname(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
+                    className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                   />
+
+                  <div className="mt-2 flex items-start gap-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11px] font-medium text-amber-800 leading-relaxed">
+                    <Info className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      {nicknameStatus.message} İsim ve soyismini daima{' '}
+                      <strong>küçük harflerle</strong> yazmalısın.
+                    </span>
+                  </div>
                 </div>
 
                 {profileMsg.text && (
@@ -652,7 +720,6 @@ export default function App() {
               </form>
             </div>
 
-            {/* Hesap & Şifre Ayarları Kartı */}
             <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
               <h3 className="text-base font-extrabold text-slate-900">
                 Hesap & Şifre Güvenliği
@@ -725,7 +792,6 @@ export default function App() {
               </form>
             </div>
 
-            {/* Lobi & Kadro Yönetimi Kartı */}
             <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-extrabold text-slate-900">
@@ -740,7 +806,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Üyeler Listesi */}
               <div className="flex flex-wrap gap-2">
                 {membersList.map((m) => (
                   <div
@@ -760,7 +825,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Lobilerim */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5" />
@@ -780,7 +844,9 @@ export default function App() {
                     }`}
                   >
                     <span className="truncate">{g.name}</span>
-                    {g.id === activeGroup.id && <Check className="w-4 h-4 text-emerald-600" />}
+                    {g.id === activeGroup.id && (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    )}
                   </button>
                 ))}
 
@@ -793,7 +859,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Lobi Sil & Çıkış Yap */}
               <div className="pt-2 flex gap-2">
                 {isAdmin && (
                   <button
