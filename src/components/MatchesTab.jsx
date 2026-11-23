@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import UserAvatar from './UserAvatar';
 import {
   getIstanbulDateString,
   shiftDateString,
@@ -109,7 +110,6 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
           }
         }
 
-        // Tahmin girilmemiş maçlara varsayılan 0-0 taslak ata
         for (const mid of matchIds) {
           if (!drafts[mid]) {
             drafts[mid] = { home: 0, away: 0 };
@@ -301,23 +301,23 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
   return (
     <div className="space-y-4">
       {/* Alt Sekmeler */}
-      <div className="grid grid-cols-3 gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
+      <div className="grid grid-cols-3 gap-1 bg-white border border-slate-200/80 p-1 rounded-2xl shadow-sm">
         <button
           onClick={() => setSubView('matches')}
-          className={`py-2 rounded-lg text-xs font-medium transition ${
+          className={`py-2 rounded-xl text-xs font-bold transition ${
             subView === 'matches'
-              ? 'bg-emerald-500 text-slate-950 font-semibold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Günün Maçları
         </button>
         <button
           onClick={() => setSubView('leaderboard')}
-          className={`py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition ${
+          className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
             subView === 'leaderboard'
-              ? 'bg-emerald-500 text-slate-950 font-semibold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           <Trophy className="w-3.5 h-3.5" />
@@ -325,10 +325,10 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
         </button>
         <button
           onClick={() => setSubView('manage')}
-          className={`py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition ${
+          className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
             subView === 'manage'
-              ? 'bg-emerald-500 text-slate-950 font-semibold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           <PlusCircle className="w-3.5 h-3.5" />
@@ -340,48 +340,54 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
       {subView === 'matches' && (
         <div className="space-y-3.5">
           {/* Tarih Seçici */}
-          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
+          <div className="flex items-center justify-between bg-white border border-slate-200/80 rounded-2xl px-3 py-2.5 shadow-sm">
             <button
               onClick={() => setSelectedDate((d) => shiftDateString(d, -1))}
-              className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300"
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-600 active:scale-95 transition"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="text-center">
-              <div className="text-sm font-bold text-white">
+              <div className="text-sm font-extrabold text-slate-900">
                 {formatTurkishDateLabel(selectedDate)}
               </div>
-              <div className="text-[11px] text-slate-400">{selectedDate}</div>
+              <div className="text-[11px] font-medium text-slate-400">
+                {selectedDate}
+              </div>
             </div>
             <button
               onClick={() => setSelectedDate((d) => shiftDateString(d, 1))}
-              className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300"
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-600 active:scale-95 transition"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           {/* Puan Kuralı Özeti */}
-          <div className="flex items-center justify-between text-[11px] text-slate-400 bg-slate-900/50 border border-slate-800/70 rounded-xl px-3 py-2">
-            <span>🎯 Tam Skor: <strong className="text-emerald-400">3 Puan</strong></span>
-            <span>✅ Doğru Sonuç (1X2): <strong className="text-sky-400">1 Puan</strong></span>
-            <span>🔒 Maç saatinde kilitlenir</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 bg-white border border-slate-200/80 rounded-2xl px-3.5 py-2.5 shadow-sm">
+            <span>
+              Tam Skor: <strong className="text-emerald-600">3 Puan</strong>
+            </span>
+            <span>
+              Doğru Sonuç (1X2): <strong className="text-blue-600">1 Puan</strong>
+            </span>
+            <span className="text-slate-400">Maç saatinde kilitlenir</span>
           </div>
 
           {loadingMatches ? (
             <div className="py-12 flex justify-center">
-              <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
             </div>
           ) : picks.length === 0 ? (
-            <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 text-center space-y-2">
-              <p className="text-sm font-medium text-slate-300">
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 text-center space-y-2 shadow-sm">
+              <p className="text-sm font-bold text-slate-800">
                 Bu tarih için seçilmiş maç henüz yok.
               </p>
               <p className="text-xs text-slate-500">
                 Otomatik maçlar her sabah 09:05&apos;te seçilir. Süper Lig veya özel bir maçı{' '}
                 <button
                   onClick={() => setSubView('manage')}
-                  className="text-emerald-400 underline"
+                  className="text-emerald-600 font-bold underline"
                 >
                   Maç Ekle
                 </button>{' '}
@@ -401,45 +407,45 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
                 return (
                   <div
                     key={m.id}
-                    className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3"
+                    className="bg-white border border-slate-200/80 rounded-3xl p-4 space-y-3.5 shadow-sm"
                   >
                     {/* Lig & Saat & Durum */}
                     <div className="flex items-center justify-between gap-2 text-[11px]">
-                      <div className="flex items-center gap-1.5 text-slate-400">
-                        <span className="font-medium text-slate-300">{compTitle}</span>
+                      <div className="flex items-center gap-1.5 text-slate-500 flex-wrap">
+                        <span className="font-bold text-slate-700">{compTitle}</span>
                         {m.is_featured && (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 font-medium">
-                            <Star className="w-3 h-3 fill-amber-300" />
+                          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-semibold">
+                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
                             Öne Çıkan
                           </span>
                         )}
                         {m.source === 'manual' && (
-                          <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300">
+                          <span className="px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700 font-semibold">
                             Manuel
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {m.status === 'finished' ? (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 font-semibold">
+                          <span className="px-2.5 py-1 rounded-xl bg-slate-900 text-white font-bold">
                             MS {m.home_score} - {m.away_score}
                           </span>
                         ) : m.status === 'live' ? (
-                          <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-semibold animate-pulse">
+                          <span className="px-2.5 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 font-bold animate-pulse">
                             Canlı {m.home_score ?? 0}-{m.away_score ?? 0}
                           </span>
                         ) : m.status === 'postponed' || m.status === 'cancelled' ? (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">
+                          <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-500 font-semibold">
                             {m.status === 'postponed' ? 'Ertelendi' : 'İptal'}
                           </span>
                         ) : isStarted ? (
-                          <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 flex items-center gap-1">
+                          <span className="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-semibold flex items-center gap-1">
                             <Lock className="w-3 h-3" />
                             Başladı ({formatIstanbulTime(m.kickoff_at)})
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-semibold">
+                          <span className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold">
                             {formatIstanbulTime(m.kickoff_at)}
                           </span>
                         )}
@@ -447,425 +453,39 @@ export default function MatchesTab({ groupId, userId, isAdmin, membersMap }) {
                     </div>
 
                     {/* Takımlar ve Tahmin Girişi */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2.5">
                       <div className="text-right">
-                        <div className="text-sm font-bold text-white leading-tight">
+                        <div className="text-sm font-extrabold text-slate-900 leading-tight">
                           {m.home_team}
                         </div>
                       </div>
 
                       {isOpen ? (
-                        <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-1.5">
+                        <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-2xl p-1.5">
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => adjustDraft(m.id, 'home', -1)}
-                              className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
+                              className="w-7 h-7 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-sm shadow-2xs active:scale-95 transition"
                             >
                               -
                             </button>
-                            <span className="w-6 text-center text-base font-bold text-white">
+                            <span className="w-6 text-center text-base font-extrabold text-slate-900">
                               {draft.home}
                             </span>
                             <button
                               type="button"
                               onClick={() => adjustDraft(m.id, 'home', 1)}
-                              className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
+                              className="w-7 h-7 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-sm shadow-2xs active:scale-95 transition"
                             >
                               +
                             </button>
                           </div>
 
-                          <span className="text-slate-500 font-bold px-0.5">:</span>
+                          <span className="text-slate-400 font-extrabold px-0.5">:</span>
 
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => adjustDraft(m.id, 'away', -1)}
-                              className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
-                            >
-                              -
-                            </button>
-                            <span className="w-6 text-center text-base font-bold text-white">
-                              {draft.away}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => adjustDraft(m.id, 'away', 1)}
-                              className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
-                          <div className="text-[10px] text-slate-500">Tahminin</div>
-                          <div className="text-sm font-bold text-white">
-                            {myPred ? `${myPred.home_pred} - ${myPred.away_pred}` : '—'}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="text-left">
-                        <div className="text-sm font-bold text-white leading-tight">
-                          {m.away_team}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Kaydet Butonu veya Kazanılan Puan */}
-                    {isOpen ? (
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[11px] text-slate-400">
-                          {myPred
-                            ? `Kayıtlı tahminin: ${myPred.home_pred} - ${myPred.away_pred}`
-                            : 'Henüz tahmin girmedin'}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={savingMatchId === m.id}
-                          onClick={() => savePrediction(m)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
-                            savedToastId === m.id
-                              ? 'bg-emerald-400 text-slate-950'
-                              : myPred
-                              ? 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
-                          }`}
-                        >
-                          {savingMatchId === m.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : savedToastId === m.id ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              Kaydedildi
-                            </>
-                          ) : myPred ? (
-                            'Tahmini Güncelle'
-                          ) : (
-                            'Tahmini Kaydet'
-                          )}
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                        {myPred && myPred.points !== null && (
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-400">Bu maçtan kazancın:</span>
-                            <span
-                              className={`font-bold px-2 py-0.5 rounded-md ${
-                                myPred.points === 3
-                                  ? 'bg-emerald-500/20 text-emerald-300'
-                                  : myPred.points === 1
-                                  ? 'bg-sky-500/20 text-sky-300'
-                                  : 'bg-slate-800 text-slate-400'
-                              }`}
-                            >
-                              +{myPred.points} Puan{' '}
-                              {myPred.points === 3
-                                ? '(Tam Skor!)'
-                                : myPred.points === 1
-                                ? '(Doğru Sonuç)'
-                                : ''}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Maç başladıktan sonra arkadaşların tahminleri açılır */}
-                        {matchPreds.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[11px] text-slate-500 flex items-center gap-1 mr-1">
-                              <Users className="w-3 h-3" />
-                              Grup:
-                            </span>
-                            {matchPreds.map((pr) => {
-                              const member = membersMap[pr.user_id];
-                              return (
-                                <span
-                                  key={pr.id}
-                                  className="text-[11px] px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-slate-300"
-                                >
-                                  {member ? `${member.avatar} ${member.nickname}` : 'Üye'}:{' '}
-                                  <strong className="text-white">
-                                    {pr.home_pred}-{pr.away_pred}
-                                  </strong>
-                                  {pr.points !== null && (
-                                    <span className="text-emerald-400 ml-1">
-                                      (+{pr.points})
-                                    </span>
-                                  )}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 2) PUAN TABLOSU */}
-      {subView === 'leaderboard' && (
-        <div className="space-y-3.5">
-          <div className="grid grid-cols-3 gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
-            {[
-              { id: 'daily', label: 'Günlük' },
-              { id: 'weekly', label: 'Bu Hafta' },
-              { id: 'overall', label: 'Genel' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setLbPeriod(tab.id)}
-                className={`py-1.5 rounded-lg text-xs font-medium transition ${
-                  lbPeriod === tab.id
-                    ? 'bg-slate-800 text-emerald-400 font-semibold'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {loadingLb ? (
-            <div className="py-12 flex justify-center">
-              <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
-            </div>
-          ) : lbRows.length === 0 ? (
-            <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-8 text-center">
-              <p className="text-sm text-slate-400">
-                Bu dönem için henüz sonuçlanmış tahmin puanı yok.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800 overflow-hidden">
-              {lbRows.map((row) => {
-                const member = membersMap[row.user_id];
-                const medal =
-                  row.rank === 1
-                    ? '🥇'
-                    : row.rank === 2
-                    ? '🥈'
-                    : row.rank === 3
-                    ? '🥉'
-                    : `${row.rank}.`;
-
-                return (
-                  <div
-                    key={row.user_id}
-                    className={`flex items-center justify-between px-4 py-3.5 ${
-                      row.user_id === userId ? 'bg-emerald-500/10' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 text-center font-bold text-sm text-slate-300">
-                        {medal}
-                      </span>
-                      <span className="text-xl">{member?.avatar || '🙂'}</span>
-                      <div>
-                        <div className="text-sm font-semibold text-white">
-                          {row.nickname}
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          {row.exact_count} tam skor
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-base font-bold text-emerald-400">
-                        {row.total_points} P
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <p className="text-[11px] text-slate-500 text-center">
-            Eşit puanda önce tam skor sayısı, ardından tahminleri maça ne kadar erken girdiği esas alınır.
-          </p>
-        </div>
-      )}
-
-      {/* 3) MANUEL MAÇ EKLEME & YÖNETİCİ SKOR GİRİŞİ */}
-      {subView === 'manage' && (
-        <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5">
-            <h3 className="text-sm font-bold text-white">
-              Manuel Maç Ekle (Süper Lig / Özel)
-            </h3>
-            <p className="text-xs text-slate-400">
-              Eklediğin maç doğrudan o günün tahmin listesine girer.
-            </p>
-
-            <form onSubmit={handleAddManualMatch} className="space-y-3">
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">Turnuva / Lig</label>
-                <input
-                  type="text"
-                  value={compLabel}
-                  onChange={(e) => setCompLabel(e.target.value)}
-                  placeholder="Süper Lig"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Ev Sahibi</label>
-                  <input
-                    type="text"
-                    required
-                    value={homeTeam}
-                    onChange={(e) => setHomeTeam(e.target.value)}
-                    placeholder="Galatasaray"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Deplasman</label>
-                  <input
-                    type="text"
-                    required
-                    value={awayTeam}
-                    onChange={(e) => setAwayTeam(e.target.value)}
-                    placeholder="Fenerbahçe"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              {/* Hızlı Takım Seçim Çipleri */}
-              <div className="flex flex-wrap gap-1.5">
-                {SUPER_LIG_QUICK_TEAMS.map((team) => (
-                  <button
-                    key={team}
-                    type="button"
-                    onClick={() => {
-                      if (!homeTeam) setHomeTeam(team);
-                      else if (!awayTeam && homeTeam !== team) setAwayTeam(team);
-                    }}
-                    className="text-[11px] px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 hover:border-emerald-500/50"
-                  >
-                    + {team}
-                  </button>
-                ))}
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">
-                  Başlama Tarihi ve Saati (Türkiye Saati)
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={kickoffLocal}
-                  onChange={(e) => setKickoffLocal(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {manageMsg && (
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
-                  {manageMsg}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={addingMatch}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2"
-              >
-                {addingMatch ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  'Maçı Listeye Ekle'
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Grup Yöneticisi Skor Giriş Paneli */}
-          {isAdmin && manualMatches.length > 0 && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold">
-                <ShieldCheck className="w-4 h-4" />
-                Yönetici Skor Paneli (Manuel Maçlar)
-              </div>
-
-              <div className="space-y-2.5">
-                {manualMatches.map((m) => {
-                  const sc = adminScores[m.id] || { home: 0, away: 0 };
-                  return (
-                    <div
-                      key={m.id}
-                      className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2"
-                    >
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-white">
-                          {m.home_team} - {m.away_team}
-                        </span>
-                        <span className="text-[11px] text-slate-400">
-                          {m.status === 'finished'
-                            ? `Bitti (${m.home_score}-${m.away_score})`
-                            : formatIstanbulTime(m.kickoff_at)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={0}
-                          max={20}
-                          value={sc.home}
-                          onChange={(e) =>
-                            setAdminScores((prev) => ({
-                              ...prev,
-                              [m.id]: { ...sc, home: e.target.value },
-                            }))
-                          }
-                          className="w-14 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center text-sm text-white"
-                        />
-                        <span className="text-slate-500 font-bold">-</span>
-                        <input
-                          type="number"
-                          min={0}
-                          max={20}
-                          value={sc.away}
-                          onChange={(e) =>
-                            setAdminScores((prev) => ({
-                              ...prev,
-                              [m.id]: { ...sc, away: e.target.value },
-                            }))
-                          }
-                          className="w-14 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center text-sm text-white"
-                        />
-
-                        <button
-                          type="button"
-                          disabled={updatingScoreId === m.id}
-                          onClick={() => handleFinishManualMatch(m.id, 'finished')}
-                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-1.5 px-2.5 rounded-lg text-xs"
-                        >
-                          Skoru Kaydet & Puanla
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+                              className="w-7 h
