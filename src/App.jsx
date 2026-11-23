@@ -444,10 +444,9 @@ export default function App() {
       className="min-h-screen bg-[#f4f6f9] text-slate-900"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 6.5rem)' }}
     >
-      {/* Telefonun üst saat/şarj çubuğundan güvenli boşluk bırakan üst bar */}
       <header
         className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200/80"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.35rem)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.75rem)' }}
       >
         <div className="max-w-lg mx-auto px-4 min-h-[4rem] py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -491,14 +490,14 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('profile')}
-            className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition shrink-0"
+            className="flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/90 active:scale-95 transition shrink-0"
           >
             <UserAvatar
               avatar={profile.avatar}
               nickname={profile.nickname}
               size="xs"
             />
-            <span className="text-xs font-bold text-slate-800 max-w-[85px] truncate">
+            <span className="text-xs font-bold text-slate-800 max-w-[78px] truncate">
               {profile.nickname}
             </span>
           </button>
