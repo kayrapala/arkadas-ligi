@@ -226,7 +226,7 @@ export default function App() {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-6 bg-[#f8fafc] text-slate-900"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}
+        style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 2.75rem))' }}
       >
         <div className="max-w-md w-full bg-white border border-amber-300 rounded-3xl p-6 shadow-lg space-y-3">
           <div className="flex items-center gap-2 text-amber-600 font-bold">
@@ -289,7 +289,133 @@ export default function App() {
 
   function copyFullInviteMessage() {
     if (!activeGroup?.invite_code) return;
-    const text = `🏆 ${activeGroup.name} lobisine katıl!\nLink: ${window.location.origin}\nDavet Kodu: ${activeGroup.invite_code}`; navigator.clipboard?.writeText(text); setCopiedInviteLink(true); setTimeout(() => setCopiedInviteLink(false), 2500); }  async function handlePhotoUpload(e) { const file = e.target.files?.[0]; if (!file) return; setProfileMsg({ type: '', text: '' }); try { const compressed = await compressImageFile(file); setEditAvatarSrc(compressed); } catch (err) { setProfileMsg({ type: 'error', text: err.message \vert{}\vert{} 'Fotoğraf yüklenemedi.', }); } }  async function handleSaveProfile(e) { e.preventDefault(); setProfileMsg({ type: '', text: '' });  if (normalizedEditNickname.length < 2 \vert{}\vert{} normalizedEditNickname.length > 24) { setProfileMsg({ type: 'error', text: 'İsim ve soyisim 2 ile 24 karakter arasında olmalı.', }); return; }  if (isNicknameChanged && !nicknameStatus.canChange) { setProfileMsg({ type: 'error', text: nicknameStatus.message, }); return; }  const formattedAvatar = formatAvatarValue(editAvatarSrc, editRingColor);  setSavingProfile(true); try { const { data, error: updErr } = await supabase .from('profiles') .update({ nickname: normalizedEditNickname, avatar: formattedAvatar, }) .eq('id', session.user.id) .select() .single();  if (updErr) { if (updErr.code === '23505') { throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad dene.'); } throw updErr; }  setProfile(data); setEditNickname(data.nickname); await loadGroupMembers(activeGroup.id); setProfileMsg({ type: 'success', text: isNicknameChanged ? 'İsim/soyisim ve profil görünümün güncellendi.' : 'Fotoğrafın ve profil görünümün güncellendi.', }); } catch (err) { setProfileMsg({ type: 'error', text: err.message \vert{}\vert{} 'Profil güncellenemedi.', }); } finally { setSavingProfile(false); } }  async function handleChangePassword(e) { e.preventDefault(); setPasswordMsg({ type: '', text: '' });  if (newPassword.length < 6) { setPasswordMsg({ type: 'error', text: 'Yeni şifre en az 6 karakter olmalı.', }); return; } if (newPassword !== confirmPassword) { setPasswordMsg({ type: 'error', text: 'Girdiğin iki şifre birbiriyle eşleşmiyor.', }); return; }  setSavingPassword(true); try { const { error: pwErr } = await supabase.auth.updateUser({ password: newPassword, }); if (pwErr) throw pwErr;  setNewPassword(''); setConfirmPassword(''); setPasswordMsg({ type: 'success', text: 'Hesap şifren başarıyla güncellendi.', }); } catch (err) { setPasswordMsg({ type: 'error', text: err.message \vert{}\vert{} 'Şifre güncellenemedi.', }); } finally { setSavingPassword(false); } }  async function handleDeleteActiveGroup() { if (!isAdmin \vert{}\vert{} !activeGroup) return; const confirmed = window.confirm( `"${activeGroup.name}" lobisini kalıcı olarak silmek istediğine emin misin?`
+    const text = `🏆 ${activeGroup.name} lobisine katıl!\nLink: ${window.location.origin}\nDavet Kodu: ${activeGroup.invite_code}`;
+    navigator.clipboard?.writeText(text);
+    setCopiedInviteLink(true);
+    setTimeout(() => setCopiedInviteLink(false), 2500);
+  }
+
+  async function handlePhotoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfileMsg({ type: '', text: '' });
+    try {
+      const compressed = await compressImageFile(file);
+      setEditAvatarSrc(compressed);
+    } catch (err) {
+      setProfileMsg({
+        type: 'error',
+        text: err.message || 'Fotoğraf yüklenemedi.',
+      });
+    }
+  }
+
+  async function handleSaveProfile(e) {
+    e.preventDefault();
+    setProfileMsg({ type: '', text: '' });
+
+    if (normalizedEditNickname.length < 2 || normalizedEditNickname.length > 24) {
+      setProfileMsg({
+        type: 'error',
+        text: 'İsim ve soyisim 2 ile 24 karakter arasında olmalı.',
+      });
+      return;
+    }
+
+    if (isNicknameChanged && !nicknameStatus.canChange) {
+      setProfileMsg({
+        type: 'error',
+        text: nicknameStatus.message,
+      });
+      return;
+    }
+
+    const formattedAvatar = formatAvatarValue(editAvatarSrc, editRingColor);
+
+    setSavingProfile(true);
+    try {
+      const { data, error: updErr } = await supabase
+        .from('profiles')
+        .update({
+          nickname: normalizedEditNickname,
+          avatar: formattedAvatar,
+        })
+        .eq('id', session.user.id)
+        .select()
+        .single();
+
+      if (updErr) {
+        if (updErr.code === '23505') {
+          throw new Error('Bu isim zaten kayıtlı, lütfen farklı bir ad veya soyad dene.');
+        }
+        throw updErr;
+      }
+
+      setProfile(data);
+      setEditNickname(data.nickname);
+      await loadGroupMembers(activeGroup.id);
+      setProfileMsg({
+        type: 'success',
+        text: isNicknameChanged
+          ? 'İsim/soyisim ve profil görünümün güncellendi.'
+          : 'Fotoğrafın ve profil görünümün güncellendi.',
+      });
+    } catch (err) {
+      setProfileMsg({
+        type: 'error',
+        text: err.message || 'Profil güncellenemedi.',
+      });
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPasswordMsg({ type: '', text: '' });
+
+    if (newPassword.length < 6) {
+      setPasswordMsg({
+        type: 'error',
+        text: 'Yeni şifre en az 6 karakter olmalı.',
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg({
+        type: 'error',
+        text: 'Girdiğin iki şifre birbiriyle eşleşmiyor.',
+      });
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      const { error: pwErr } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (pwErr) throw pwErr;
+
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordMsg({
+        type: 'success',
+        text: 'Hesap şifren başarıyla güncellendi.',
+      });
+    } catch (err) {
+      setPasswordMsg({
+        type: 'error',
+        text: err.message || 'Şifre güncellenemedi.',
+      });
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
+  async function handleDeleteActiveGroup() {
+    if (!isAdmin || !activeGroup) return;
+    const confirmed = window.confirm(
+      `"${activeGroup.name}" lobisini kalıcı olarak silmek istediğine emin misin?`
     );
     if (!confirmed) return;
 
@@ -320,7 +446,7 @@ export default function App() {
     >
       <header
         className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200/80"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.75rem)' }}
+        style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 2.75rem))' }}
       >
         <div className="max-w-lg mx-auto px-4 min-h-[4rem] py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -459,7 +585,13 @@ export default function App() {
                         type="button"
                         onClick={() => setEditRingColor(ring.id)}
                         title={ring.label}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition ${ editRingColor === ring.id ? 'border-slate-900 scale-110 bg-white shadow-sm' : 'border-slate-200 bg-slate-50 opacity-75 hover:opacity-100' }`} > <span className={`w-4 h-4 rounded-full ${ring.dotClass}`} />
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition ${
+                          editRingColor === ring.id
+                            ? 'border-slate-900 scale-110 bg-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50 opacity-75 hover:opacity-100'
+                        }`}
+                      >
+                        <span className={`w-4 h-4 rounded-full ${ring.dotClass}`} />
                       </button>
                     ))}
                   </div>
@@ -780,4 +912,39 @@ export default function App() {
             onClick={() => setActiveTab('proposals')}
             className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
               activeTab === 'proposals'
-                ? 'bg
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Vote className="w-4 h-4" />
+            <span>Oylamalar</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('shares')}
+            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
+              activeTab === 'shares'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Film className="w-4 h-4" />
+            <span>Öneriler</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition active:scale-95 ${
+              activeTab === 'profile'
+                ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            <span>Profil</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
+}
